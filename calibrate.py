@@ -5,22 +5,23 @@ import os
 import argparse
 import time
 import glob
+import shutil
 
-parser = argparse.ArgumentParser(allow_abbrev=False,
-                                 description='Calibrate a camera using checkerboard')
-parser.add_argument('-p', '--path',
-                    type=str,
-                    default='./frames/',
-                    help='Path of the images directory')
-parser.add_argument('-r', '--row',
-                    type=int,
-                    default=5,
-                    help='No. of rows of the checkerboard')
-parser.add_argument('-c', '--col',
-                    type=int,
-                    default=8,
-                    help='No. of cols of the checkerboard')
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(allow_abbrev=False,
+#                                  description='Calibrate a camera using checkerboard')
+# parser.add_argument('-p', '--path',
+#                     type=str,
+#                     default='./frames/',
+#                     help='Path of the images directory')
+# parser.add_argument('-r', '--row',
+#                     type=int,
+#                     default=5,
+#                     help='No. of rows of the checkerboard')
+# parser.add_argument('-c', '--col',
+#                     type=int,
+#                     default=8,
+#                     help='No. of cols of the checkerboard')
+# args = parser.parse_args()
 
 
 def calibrate(path, dims):
@@ -104,8 +105,10 @@ def calibrate(path, dims):
 
 
 if __name__ == "__main__":
-    path = args.path
-    dims = tuple((args.row, args.col))
+    # path = args.path
+    # dims = tuple((args.row, args.col))
+    path = 'c1_mod/'
+    dims = (7, 7)
     t1 = time.time()
     calibrate(path, dims)
     print(f"\nTime taken: {time.time() - t1} seconds\n")
