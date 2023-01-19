@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 import glob
+import shutil
 
 
 def calib(path, dims, checkerboard_grid_sz):
@@ -23,6 +24,7 @@ def calib(path, dims, checkerboard_grid_sz):
 
     # Extracting path of individual image stored in a given directory
     images = glob.glob(os.path.join(path, "*.tif"))
+    images.sort()
 
     for fname in images:
         print(fname)
@@ -51,8 +53,8 @@ def calib(path, dims, checkerboard_grid_sz):
             # Draw and display the corners
             img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
 
-        cv2.imshow('img', img)
-        cv2.waitKey(0)
+        # cv2.imshow('img', img)
+        # cv2.waitKey(0)
 
     cv2.destroyAllWindows()
 
@@ -64,8 +66,32 @@ def calib(path, dims, checkerboard_grid_sz):
     and corresponding pixel coordinates of the 
     detected corners (imgpoints)
     """
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints,
-                                                       gray.shape[::-1], None, None)
+    ret, mtx, dist, rvecs, tvecs = \
+        cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+
+    if os.path.exists(path + '/results/'):
+        shutil.rmtree(path + '/results/')
+    os.makedirs(path + '/results/')
+
+    np.savetxt(path + '/results/mtx.csv', mtx, delimiter=',')
+    print("dist : \n")
+    print(dist)
+    np.savetxt(path + '/results/dist.csv', dist, delimiter=',')
+
+    # undistort images
+    for fname in images:
+        print(fname)
+        img = cv2.imread(fname)
+        h,  w = img.shape[:2]
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h),
+                                                          1, (w, h))
+        # undistort
+        dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
+
+        # # crop the image
+        x, y, w, h = roi
+        dst = dst[y:y+h, x:x+w]
+        cv2.imwrite(fname[:-4] + '_undist.png', dst)
 
     print("Camera matrix : \n")
     print(mtx)
@@ -81,4 +107,4 @@ if __name__ == "__main__":
     path = 'c1/'
     dims = (7, 7)
     checkerboard_grid_sz = 20 #[in mm]
-    calib(path, dim, checkerboard_grid_sz)
+    calib(path, dims, checkerboard_grid_sz)
